@@ -32,6 +32,8 @@ RUN apk add --no-cache runit postfix opendkim \
     \
     && true
 
+VOLUME ["/var/spool/postfix"]
+
 COPY conf/opendkim.conf /etc/opendkim/opendkim.conf
 COPY runit /supervisor
 
