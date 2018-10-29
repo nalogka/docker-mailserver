@@ -22,6 +22,9 @@ do
     | dump -a "$BASE_DIR/signingtable"
 done
 
+cat /dev/null | dump -a "$BASE_DIR/keytable"
+cat /dev/null | dump -a "$BASE_DIR/signingtable"
+
 ip addr | sed -En 's/.*inet (([0-9]+\.){3})[0-9]+\/([0-9]+).*/\10\/\3/p' \
   | dump "$BASE_DIR/internal"
 
