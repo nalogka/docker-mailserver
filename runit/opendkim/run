@@ -1,0 +1,28 @@
+#!/bin/sh
+
+die () { echo -e "$@" >&2; exit 1; }
+dump() { su -s /bin/sh opendkim -c "tee $*" >/dev/null; }
+
+BASE_DIR="/opendkim"
+DKIM_PRIVATE_KEYS_DIR="/run/secrets/opendkim"
+
+ls -1d "$DKIM_PRIVATE_KEYS_DIR"/*.private \
+| while read -r PRIVATE
+do
+  PRIVATE="$(basename $PRIVATE)"
+  KEY_FILE="$BASE_DIR/$PRIVATE"
+  CONFIG="${PRIVATE%.private}"
+  DOMAIN="${CONFIG#*.}"
+  SELECTOR="${CONFIG%%.*}"
+  cat "$DKIM_PRIVATE_KEYS_DIR/$PRIVATE" | dump "$KEY_FILE"
+  chmod 0400 "$BASE_DIR"/*.private
+  echo "$SELECTOR._domainkey.$DOMAIN" "$DOMAIN:$SELECTOR:$KEY_FILE" \
+    | dump -a "$BASE_DIR/keytable"
+  echo "$DOMAIN" "$SELECTOR._domainkey.$DOMAIN" \
+    | dump -a "$BASE_DIR/signingtable"
+done
+
+ip addr | sed -En 's/.*inet (([0-9]+\.){3})[0-9]+\/([0-9]+).*/\10\/\3/p' \
+  | dump "$BASE_DIR/internal"
+
+exec chpst -u opendkim /usr/sbin/opendkim -f

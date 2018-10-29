@@ -1,0 +1,5 @@
+#!/bin/sh
+
+postalias /etc/postfix/aliases
+
+exec postfix start-fg
