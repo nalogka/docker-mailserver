@@ -34,6 +34,5 @@ RUN apk add --no-cache runit postfix opendkim \
 
 COPY conf/opendkim.conf /etc/opendkim/opendkim.conf
 COPY runit /supervisor
-COPY run.sh /run.sh
 
-CMD ["/run.sh"]
+CMD ["/sbin/runsvdir", "-P", "/supervisor"]
